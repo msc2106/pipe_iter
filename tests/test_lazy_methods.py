@@ -3,6 +3,9 @@ from pipe_iter import Iter
 def test_accumulate():
     ...
 
+def test_apply():
+    ...
+
 def test_batched():
     ...
 
