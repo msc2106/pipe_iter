@@ -1,1 +1,2 @@
-from pipe_iter.pipe_iter import *
+from .pipe_iter import Iter
+__all__ = ['Iter']

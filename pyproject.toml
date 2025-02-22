@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pipe-iter"
+version = "0.1.0"
+description = "A package to allow chaining of functional operations on iterators, modeled on Rust's iterator syntax"
+authors = [{name = "Mark Cohen", email = "mark.simon.cohen@gmail.com"}]
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.10"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.4",
+]
