@@ -16,6 +16,23 @@ def test_inheritance():
     assert isinstance(x, Iterable)
     assert isinstance(x, Iterator)
 
+def test_clone():
+    x = range(2)
+    itr1 = Iter(x)
+    itr2 = itr1.clone().map(lambda x: x * 2)
+    assert next(itr1) == 0
+    assert next(itr2) == 0
+    assert next(itr2) == 2
+    assert next(itr1) == 1
+
+def test_mirror():
+    itr1 = Iter(range(10))
+    itr2 = itr1.mirror().map(lambda x: x * 2)
+    assert next(itr1) == 0
+    assert next(itr2) == 2
+    assert next(itr2) == 4
+    assert next(itr1) == 3
+
 def test_from_fn():
     lst = list(range(5))
     def count_down(lst=lst):
