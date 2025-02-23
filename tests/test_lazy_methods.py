@@ -80,7 +80,14 @@ def test_permutations():
 def test_skip():
     ...
 
+def test_somevalue():
+    x = [0, 1, None, 2, "", 3, None]
+    assert Iter(x).somevalue().collect(list) == [0, 1, 2, "", 3]
+
 def test_starmap():
+    ...
+
+def test_starmap_ignore_star_settings():
     ...
 
 def test_stretch():

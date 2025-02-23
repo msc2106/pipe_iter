@@ -133,10 +133,12 @@ class Iter:
     
     def filter_map(self, fn: Callable):
         '''Applies a function to each element, and filters out `None` results.'''
-        def filter_fn(item):
-            return item is not None
-        return self.map(fn).filter(filter_fn)
+        return self.map(fn).somevalue()
     
+    def somevalue(self):
+        '''Filters out `None` values.'''
+        return self.filter(lambda x: x is not None)
+
     #*********************#
     #* Consuming methods *#
     #*********************#
