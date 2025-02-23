@@ -1,7 +1,11 @@
 from pipe_iter import Iter
+from pytest import raises
 
 def test_chained():
-    ...
+    x = list(range(5))
+    y = list("ABCD")
+    itr = Iter.chained(x, y)
+    assert itr.collect(list) == x + y
 
 def test_clone():
     x = range(2)
@@ -62,7 +66,41 @@ def test_range():
     assert list(Iter.range(5, 15, 2)) == list(range(5, 15, 2))
 
 def test_repeat():
-    ...
+    val = 'x'
+    n = 50
+    
+    itr = Iter.repeat(val, n)
+    assert itr.collect(list) == [val] * n
+    
+    itr_indefinite = Iter.repeat(val)
+    for _ in range(n):
+        assert val == next(itr_indefinite)
+    
+    empty_itr = Iter.repeat(val, 0)
+    assert empty_itr.collect(list) == []
+
+    with raises(TypeError):
+        Iter.repeat(val, val)
 
 def test_zipped():
-    ...
+    x = range(3)
+    y = range(5)
+    z = "ABCD"
+
+    itr1 = Iter.zipped(x, y, z)
+    assert itr1.collect(list) == [
+        (0, 0, 'A'),
+        (1, 1, 'B'),
+        (2, 2, 'C')
+    ]
+
+    itr2 = Iter.zipped(x, y, z, strict=True)
+    with raises(ValueError):
+        itr2.collect(list)
+
+    itr3 = Iter.zipped(range(3), z[:3], strict=True)
+    assert itr3.collect(list) == [
+        (0, 'A'),
+        (1, 'B'),
+        (2, 'C')
+    ]

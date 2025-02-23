@@ -19,6 +19,11 @@ class Iter:
     #************************#
 
     @classmethod
+    def chained(cls, *iterables):
+        '''Creates an `Iter` that chains together multiple iterables.'''
+        return cls(itertools.chain(*iterables))
+    
+    @classmethod
     def count(cls, start=0, step=1):
         '''Creates an `Iter` that behaves like `itertools.count`: an infinite series of numerical values beginning with `start` and incremented by `step`.'''
         return cls(itertools.count(start, step))
@@ -45,6 +50,11 @@ class Iter:
         end = range_arg if stop is None else stop
         return cls(range(start, end, step))
     
+    @classmethod
+    def zipped(cls, *iterables, strict=False):
+        '''Creates an `Iter` that yields tuples of elements from the provided iterables. If `strict` is `False`, the default, iteration stops when the shortest iterable is exhausted. If `strict` is `True`, a `ValueError` is raised instead of `StopIteration` if not all of the iteratables are exhausted together.'''
+        return cls(zip(*iterables, strict=strict))
+
     def clone(self):
         '''Uses `itertools.tee` to create an independent copy of the iterator, preserving this `Iter`'s settings.'''
         self.iterator, new_iterator = itertools.tee(self.iterator)
@@ -55,6 +65,18 @@ class Iter:
         '''Returns a new `Iter` that shares the same underlying iterator.'''
         new_iter = Iter(self.iterator).copy_settings(self)
         return new_iter
+    
+    @classmethod
+    def repeat(cls, item, n=None):
+        '''Creates an `Iter` that repeats `item` `n` times. If `n` is `None` (the default), the iterator will repeat indefinitely. If `n` is less than 1, the iterator will be empty.'''
+        match n:
+            case None:
+                return cls(itertools.repeat(item))
+            case int():
+                return cls(itertools.repeat(item, n))
+            case _:
+                raise TypeError("If not provided and not None, n must be an integer.")
+    
     
     #*****************#
     #* Magic methods *#
