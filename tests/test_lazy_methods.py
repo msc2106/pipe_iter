@@ -50,6 +50,9 @@ def test_flatten():
     # Reduces one level of nesting
     ...
 
+def test_fork():
+    ...
+
 def test_group_by():
     ...
 
@@ -92,6 +95,9 @@ def test_starmap_ignore_star_settings():
 
 def test_stretch():
     # Selective and/or recursive flatten
+    ...
+
+def test_switch_map():
     ...
 
 def test_takewhile():

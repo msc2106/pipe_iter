@@ -1,5 +1,6 @@
 from collections.abc import Iterable, Callable
 import itertools
+from fork import Fork
 from typing import Any
 
 class Iter:
@@ -136,14 +137,6 @@ class Iter:
     #****************#
     #* Lazy methods *#
     #****************#
-
-    def map(self, fn: Callable[[Any], Any]):
-        '''Lazily calls `fn` (which must accept a single positional argument) on each element of the iterator.'''
-        self.iterator = map(
-            fn, 
-            self.iterator
-        )
-        return self
     
     def filter(self, fn: Callable | None):
         '''Returns an `Iter` of elements for which `fn` is (evaluated as) `True`. If `fn` is `None`, filters out non-`True` values.'''
@@ -157,9 +150,25 @@ class Iter:
         '''Applies a function to each element, and filters out `None` results.'''
         return self.map(fn).somevalue()
     
+    def fork(self, *predicates: Callable[..., bool], first_only=True) -> list[Fork]:
+        '''Splits the iterator into a number of iterators equal to the number of predicates. If `first_only=True` (the default) an item is sent to the first iterator for which the predicate is `True`. Otherwise, each iterator contains all elements for which the corresponding predicate is `True`.'''
+        ...
+    
+    def map(self, fn: Callable[[Any], Any]):
+        '''Lazily calls `fn` (which must accept a single positional argument) on each element of the iterator.'''
+        self.iterator = map(
+            fn, 
+            self.iterator
+        )
+        return self
+
     def somevalue(self):
         '''Filters out `None` values.'''
         return self.filter(lambda x: x is not None)
+    
+    def switch_map(self, *conditions: tuple[None | Callable[..., bool], Callable]):
+        '''Selectively applies functions to elements with a virtual switch statement. The arguments are tuples of a predicate and a function: a given item is transformed by the first function for which the predicate is `True`. If the predicate is `None`, the function is applied to all (remaining) elements.'''
+        ...
 
     #*********************#
     #* Consuming methods *#
