@@ -7,7 +7,12 @@ def doublestar_func(fn: Callable[..., Any], convert=True):
 
 def fallible_func(fn: Callable[[Any], Any], fail_value: Any | None = None):
     '''Wraps `fn` to catch exceptions and return `fail_value`.'''
-    return fn
+    def new_fn(*args, **kwargs):
+        try:
+            return fn(*args, **kwargs)
+        except Exception:
+            return fail_value
+    return new_fn
 
 def star_func(fn: Callable[..., Any], strict=True):
     '''Wraps `fn` to unpack iterable single arguments. With `strict=True`, the default, follows behavior of `itertools.starmap` by raising `TypeError` if non-iterable arguments is passed. With `strict=False`, non-iterable arguments are passed as is.'''

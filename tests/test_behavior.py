@@ -20,6 +20,22 @@ def test_nocopy():
     assert lst2 == []
 
 def test_mutability():
+    x = range(5)
+    immutable_iter = Iter(x)
+    mutable_iter = Iter.and_mut(x)
+    immut_map = immutable_iter.map(lambda x: x+1)
+    mut_map = mutable_iter.map(lambda x: x+1)
+    v1_immut = next(immutable_iter)
+    v1_mut = next(mutable_iter)
+    v2_immut = next(immut_map)
+    v2_mut = next(mut_map)
+    assert v1_immut == 0
+    assert v1_mut == 1
+    assert v2_immut == v2_mut == 2
+    assert mutable_iter is mut_map
+    assert immutable_iter is not immut_map
+
+def test_link_to_source():
     x = list(range(5))
     lst1 = list(Iter(x))
     itr = Iter(x)
@@ -41,11 +57,13 @@ def test_lazy_eval():
     x = range(10)
     counter = 0
     def foo(x):
-        global counter
+        nonlocal counter
         counter += 1
         return x+100
-    _ = Iter(map(foo, x))
+    itr = Iter(map(foo, x))
     assert counter == 0
+    itr.collect(list)
+    assert counter == 10
 
 def test_inheritance():
     x = Iter([])

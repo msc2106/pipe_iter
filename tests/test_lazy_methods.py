@@ -1,10 +1,14 @@
 from pipe_iter import Iter
 
 def test_accumulate():
-    ...
+    assert Iter([1, 2, 3, 4, 5]).accumulate().collect(list) == [1, 3, 6, 10, 15]
+    assert Iter([1, 2, 3, 4, 5]).accumulate(initial=100).collect(list) == [100, 101, 103, 106, 110, 115]
+    assert Iter([1, 2, 3, 4, 5]).accumulate(lambda a, b: a*b).collect(list) == [1, 2, 6, 24, 120]
 
 def test_apply():
-    ...
+    def map_plus_one(iterator):
+        return map(lambda x: x+1, iterator)
+    assert Iter([1, 2, 3, 4, 5]).apply(map_plus_one).collect(list) == [2, 3, 4, 5, 6]
 
 def test_batched():
     ...

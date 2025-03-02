@@ -8,7 +8,16 @@ def test_doublestarfunc_invalid():
     ...
 
 def test_falliblefunc():
-    ...
+    lst = [0, 1, None, 2, 3]
+    itr1 = Iter(lst).map(int)
+    itr2 = Iter(lst).map(fallible_func(int))
+    with raises(TypeError):
+        _ = itr1.collect(list)
+    assert itr2.collect(list) == lst
+
+def test_fail_value():
+    lst = [0, 1, None, 2, 3]
+    assert Iter(lst).map(fallible_func(int, fail_value=0)).collect(list) == [0, 1, 0, 2, 3]
 
 def test_starfunc():
     r = range(10)

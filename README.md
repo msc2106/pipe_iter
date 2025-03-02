@@ -6,11 +6,23 @@ A package to allow chaining of functional operations on iterators.
 
 ## Usage
 
-### Initializing an Iter
+### Constructing an Iter
 
-### Lazy Methods
+### Settings
 
-While these methods do not consume the iterator, they do mutate the `Iter` object. Thus, this:
+#### Mutability
+
+Many methods of `Iter` return an `Iter`. These methods typically do not consumer the underlying iterator but instead add further transformations to it. Whether this generates a new object or mutates the original object is controlled by the `and_mut` parameter in the initializer and constructor functions. The default (`and_mut=False`) is analogous to Python's built in iterator functions: each method returns a new object, which is distinct from but linked to the original iterator.
+
+```python
+itr1 = Iter(range(10))
+itr2 = itr1.map(lambda x: x * 2, itr1)
+print(next(itr1)) # 0
+print(next(itr2)) # 2
+print(next(itr1)) # 2
+```
+
+In contrast, for a mutable `Iter`, this:
 
 ```python
 itr = Iter(range(10))
@@ -25,16 +37,8 @@ itr = Iter(range(10))
 print(*itr.map(str, itr))
 ```
 
-This is strictly speaking different from Python's built-in iteration functions, but it removes potential confusion arising from the fact that the input and output iterators of a function like `map` remain linked:
+The term `and_mut` is inspired by Rust: the idea is that the behavior of methods in a mutable Iter is analogous to a method with a signature of `(&mut self, ...)`. There is, as far as I know, no way to reproduce the behavior of an owned method call (`(self,...)`).
 
-```python
-itr1 = iter(range(10))
-itr2 = map(lambda x: x * 2, itr1)
-print(next(itr1)) # 0
-print(next(itr2)) # 2
-print(next(itr1)) # 2
-```
-
-This is different in implementation from Rust's iterators, which return new instances of distinct types, but similar in spirit, since the methods take ownership of the instance. If the outcome of two linked iterators is desired, the `mirror` method can be used.
+### Lazy Methods
 
 ### Consuming Operations
