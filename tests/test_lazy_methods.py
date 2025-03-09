@@ -48,7 +48,14 @@ def test_evenitems():
     ...
 
 def test_filter():
-    ...
+    lst = list(range(5))
+    odd = Iter(lst).filter(lambda x: x % 2).collect(list)
+    assert odd == [1, 3]
+    nonzero = Iter(lst).filter(None).collect(list)
+    assert nonzero == [1, 2, 3, 4]
+    nonzero = Iter(lst).fallible().filter(None).collect(list)
+    assert nonzero == [1, 2, 3, 4]
+
 
 def test_filterfalse():
     ...

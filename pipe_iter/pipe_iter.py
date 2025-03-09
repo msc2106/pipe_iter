@@ -187,7 +187,7 @@ class Iter:
         return self.mutating().update(fn(self.iterator))
     
     def batched(self, n: int, *, fillvalue=...):
-        '''Yields `n` elements at a time.'''
+        '''Yields tuples of `n` elements at a time. If `fillvalue` is specified, the last batch will be filled with it if necessary, otherwise the last batch batch might be smaller than `n`.'''
         def batch_generator(iterator):
             exhausted = False
             while not exhausted:
@@ -246,7 +246,7 @@ class Iter:
             .mutating()
             .update(
                 filter(
-                    self.func_options(fn), 
+                    None if fn is None else self.func_options(fn), 
                     self.iterator
                 )
             )
@@ -255,9 +255,7 @@ class Iter:
     def filter_map(self, fn: Callable):
         '''Applies a function to each element, and filters out `None` results.'''
         return (self
-            .map(
-                self.func_options(fn)
-            )
+            .map(self.func_options(fn))
             .somevalue()
         )
     
