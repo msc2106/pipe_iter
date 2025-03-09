@@ -9,7 +9,7 @@ description = "A package to allow chaining of functional operations on iterators
 authors = [{name = "Mark Cohen", email = "mark.simon.cohen@gmail.com"}]
 readme = "README.md"
 license = {file = "LICENSE"}
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 dependencies = []
 
 [dependency-groups]
