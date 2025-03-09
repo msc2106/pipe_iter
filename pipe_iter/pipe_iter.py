@@ -14,7 +14,7 @@ class Iter:
         self._fail_value = None
         self._fallible = False
     
-    def update(self, iterator: Iterator):
+    def _update(self, iterator: Iterator):
         '''Updates the iterator.'''
         self.iterator = iterator
         return self
@@ -146,7 +146,7 @@ class Iter:
         self._stars = 0
         return self
     
-    def mutating(self):
+    def _mutating(self):
         if self._mutable:
             return self
         else:
@@ -171,8 +171,8 @@ class Iter:
     def accumulate(self, fn: Callable[[Any, Any], Any] = operator.add, initial=None):
         '''Applies a function to each element and the previous result, starting with `initial`. The result of each function call is yielded. Is not effected by star settings.'''
         return (self
-            .mutating()
-            .update(
+            ._mutating()
+            ._update(
                 itertools.accumulate(
                     self.iterator,
                     self.wrap_fallible(fn),
@@ -183,7 +183,7 @@ class Iter:
     
     def apply(self, fn: Callable[[Iterable], Iterator]):
         '''Applies an arbitrary function that takes an iterable and returns an iterator.'''
-        return self.mutating().update(fn(self.iterator))
+        return self._mutating()._update(fn(self.iterator))
     
     def batched(self, n: int, *, fillvalue=...):
         '''Yields tuples of `n` elements at a time. If `fillvalue` is specified, the last batch will be filled with it if necessary, otherwise the last batch batch might be smaller than `n`.'''
@@ -206,8 +206,8 @@ class Iter:
     def chain(self, *iterables):
         '''Appends one or more other iterables to the iterator.'''
         return (self
-            .mutating()
-            .update(
+            ._mutating()
+            ._update(
                 itertools.chain(
                     self.iterator, 
                     *iterables
@@ -218,8 +218,8 @@ class Iter:
     def combinations(self, r: int):
         '''Yields all combinations of `r` elements from the iterator.'''
         return (self
-            .mutating()
-            .update(
+            ._mutating()
+            ._update(
                 itertools.combinations(
                     self.iterator, 
                     r
@@ -230,8 +230,8 @@ class Iter:
     def combinations_with_replacement(self, r: int):
         '''Yields all combinations of `r` elements from the iterator, including repeated elements.'''
         return (self
-            .mutating()
-            .update(
+            ._mutating()
+            ._update(
                 itertools.combinations_with_replacement(
                     self.iterator, 
                     r
@@ -239,12 +239,82 @@ class Iter:
             )
         )
 
-    def filter(self, fn: Callable | None):
-        '''Returns an `Iter` of elements for which `fn` is (evaluated as) `True`. If `fn` is `None`, filters out non-`True` values.'''
+    def compress(self, selectors: Iterable[bool]):
+        '''Filters the iterator by a selector iterable. The selector iterable must be the same length as the iterator.'''
         return (self
-            .mutating()
-            .update(
+            ._mutating()
+            ._update(
+                itertools.compress(
+                    self.iterator, 
+                    selectors
+                )
+            )
+        )
+
+    def cycle(self):
+        '''Cycles through the iterator indefinitely.'''
+        return (self
+            ._mutating()
+            ._update(
+                itertools.cycle(self.iterator)
+            )
+        )
+    
+    def dropwhile(self, predicate: Callable[[Any], bool]):
+        '''Drops elements from the iterator while `fn` is `True`. If `fallible`, then the predicate raising an exception will trigger to begin returning values.'''
+        return (self
+            ._mutating()
+            ._update(
+                itertools.dropwhile(
+                    self.func_options(predicate), 
+                    self.iterator
+                )
+            )
+        )
+    
+    def enumerate(self, start=0):
+        '''Enumerates the iterator, starting with `start`.'''
+        return (self
+            ._mutating()
+            ._update(
+                enumerate(
+                    self.iterator, 
+                    start
+                )
+            )
+        )
+
+    def evenitems(self):
+        '''Returns every other item of the iterator, starting with the second.'''
+        selector = Iter([False, True]).cycle()
+        return (self
+            ._mutating()
+            ._update(
+                itertools.compress(
+                    self.iterator, 
+                    selector
+                )
+            )
+        )
+
+    def filter(self, fn: Callable | None):
+        '''Returns an `Iter` of elements for which `fn` is (evaluated as) `True`. If `fn` is `None`, filters out `False`-like values.'''
+        return (self
+            ._mutating()
+            ._update(
                 filter(
+                    None if fn is None else self.func_options(fn), 
+                    self.iterator
+                )
+            )
+        )
+    
+    def filterfalse(self, fn: Callable | None):
+        '''Invers of `filter`: returns an `Iter` of elements for which `fn` is (evaluated as) `False`. If `fn` is `None`, filters out `True`-like values.'''
+        return (self
+            ._mutating()
+            ._update(
+                itertools.filterfalse(
                     None if fn is None else self.func_options(fn), 
                     self.iterator
                 )
@@ -258,16 +328,57 @@ class Iter:
             .somevalue()
         )
     
+    def flat_map(self, fn: Callable):
+        '''Applies a function to each element and flattens the result.'''
+        # note: this makes an unecessary copy of the iterator
+        return self.map(fn).flatten()
+    
     # def fork(self, *predicates: Callable[..., bool], first_only=True) -> list[Fork]:
     #     '''Splits the iterator into a number of iterators equal to the number of predicates. If `first_only=True` (the default) an item is sent to the first iterator for which the predicate is `True`. Otherwise, each iterator contains all elements for which the corresponding predicate is `True`.'''
     #     ...
     
+    def flatten(self):
+        '''Reduces one level of nesting. Raises `TypeError` if the items of the iterator are not themselves iterable. To keep drop non-iterable items, combine with `filter`. To include non-iterable items as part of the flattening, use `stretch`.'''
+        return (self
+            ._mutating()
+            ._update(
+                itertools.chain.from_iterable(self.iterator)
+            )
+        )
+
+    def groupby(self, key: Callable | None = None):
+        '''Groups consecutive items in the iterator by a key function. If `key` is `None`, groups by the identity function. Each iteration returns a tuple of the group key and an iterable of the group items.'''
+        return (self
+            ._mutating()
+            ._update(
+                itertools.groupby(
+                    self.iterator, 
+                    key
+                )
+            )
+        )
+
+    def inspect(self, fn: Callable[[Any], Any]):
+        '''Does something with each element of an iterator, passing the **original** value on. This can be used to introduce side-effects to the consumption of the iterator, e.g. to log something for each element. If the iterator is fallible, any exceptions raised by `fn` will be caught and the iterator will continue.'''
+        wrapped_function = self.func_options(fn)
+        def inspector(x):
+            wrapped_function(x)
+            return x
+        return (self
+            ._mutating()
+            ._update(
+                map(
+                    inspector, 
+                    self.iterator
+                )
+            )
+        )
     
     def map(self, fn: Callable[[Any], Any]):
         '''Maps `fn` onto each element of the iterator.'''
         return (self
-            .mutating()
-            .update(
+            ._mutating()
+            ._update(
                 map(
                     self.func_options(fn), 
                     self.iterator
