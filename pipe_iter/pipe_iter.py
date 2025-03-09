@@ -1,5 +1,4 @@
 from collections.abc import Callable, Iterable, Iterator
-from functools import partial
 import itertools
 import operator
 from typing import Any
