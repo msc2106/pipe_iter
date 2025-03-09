@@ -153,12 +153,17 @@ class Iter:
         else:
             return self.mirror()
     
-    def func_options(self, func: Callable):
+    def wrap_fallible(self, fn: Callable):
+        if self._fallible:
+            return fallible_func(fn, fail_value=self._fail_value)
+        else:
+            return fn
+        
+    def func_options(self, fn: Callable):
         def identity(x: Callable):
             return x
-        inner = identity if self._stars == 0 else star_func if self._stars == 1 else doublestar_func
-        outer = partial(fallible_func, fail_value=self._fail_value) if self._fallible else identity
-        return outer(inner(func))
+        inner = doublestar_func if self._stars == 2 else star_func if self._stars == 1 else identity
+        return self.wrap_fallible(inner(fn))
 
     #****************#
     #* Lazy methods *#
@@ -166,11 +171,14 @@ class Iter:
     
     def accumulate(self, fn: Callable[[Any, Any], Any] = operator.add, initial=None):
         '''Applies a function to each element and the previous result, starting with `initial`. The result of each function call is yielded. Is not effected by star settings.'''
-        return self.mutating().update(
+        return (self
+            .mutating()
+            .update(
                 itertools.accumulate(
                     self.iterator,
-                    fn,
+                    self.wrap_fallible(fn),
                     initial=initial
+                )
             )
         )
     
@@ -178,12 +186,69 @@ class Iter:
         '''Applies an arbitrary function that takes an iterable and returns an iterator.'''
         return self.mutating().update(fn(self.iterator))
     
+    def batched(self, n: int, *, fillvalue=...):
+        '''Yields `n` elements at a time.'''
+        def batch_generator(iterator):
+            exhausted = False
+            while not exhausted:
+                batch = []
+                for _ in range(n):
+                    try:
+                        batch.append(next(iterator))
+                    except StopIteration:
+                        exhausted = True
+                        if fillvalue is not ...:
+                            batch.append(fillvalue)
+                        else:
+                            break
+                yield tuple(batch)
+        return self.apply(batch_generator)
+    
+    def chain(self, *iterables):
+        '''Appends one or more other iterables to the iterator.'''
+        return (self
+            .mutating()
+            .update(
+                itertools.chain(
+                    self.iterator, 
+                    *iterables
+                )
+            )
+        )
+    
+    def combinations(self, r: int):
+        '''Yields all combinations of `r` elements from the iterator.'''
+        return (self
+            .mutating()
+            .update(
+                itertools.combinations(
+                    self.iterator, 
+                    r
+                )
+            )
+        )
+    
+    def combinations_with_replacement(self, r: int):
+        '''Yields all combinations of `r` elements from the iterator, including repeated elements.'''
+        return (self
+            .mutating()
+            .update(
+                itertools.combinations_with_replacement(
+                    self.iterator, 
+                    r
+                )
+            )
+        )
+
     def filter(self, fn: Callable | None):
         '''Returns an `Iter` of elements for which `fn` is (evaluated as) `True`. If `fn` is `None`, filters out non-`True` values.'''
-        return self.mutating().update(
-            filter(
-                self.func_options(fn), 
-                self.iterator
+        return (self
+            .mutating()
+            .update(
+                filter(
+                    self.func_options(fn), 
+                    self.iterator
+                )
             )
         )
     
@@ -202,11 +267,14 @@ class Iter:
     
     
     def map(self, fn: Callable[[Any], Any]):
-        '''Lazily calls `fn` (which must accept a single positional argument) on each element of the iterator.'''
-        return self.mutating().update(
-            map(
-                self.func_options(fn), 
-                self.iterator
+        '''Maps `fn` onto each element of the iterator.'''
+        return (self
+            .mutating()
+            .update(
+                map(
+                    self.func_options(fn), 
+                    self.iterator
+                )
             )
         )
     

@@ -3,7 +3,10 @@ from typing import Any
 
 def doublestar_func(fn: Callable[..., Any], convert=True):
     '''Wraps `fn` to unpack mapping arguments. With `convert=True`, the default, tries to convert the argument to a `dict` (e.g. collections of duples).'''
-    return fn
+    def new_fn(val: Mapping | Iterable):
+        kwargs = dict(val) if convert else val
+        return fn(**kwargs)
+    return new_fn
 
 def fallible_func(fn: Callable[[Any], Any], fail_value: Any | None = None):
     '''Wraps `fn` to catch exceptions and return `fail_value`.'''
