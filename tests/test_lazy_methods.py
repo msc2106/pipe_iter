@@ -132,7 +132,10 @@ def test_inspect():
         Iter([-1, 0, 4]).inspect(append_sqrt).collect(list)
 
 def test_islice():
-    ...
+    assert Iter('ABCDEFG').islice(2).collect(list) == ['A', 'B']
+    assert Iter('ABCDEFG').islice(2, 4).collect(list) == ['C', 'D']
+    assert Iter('ABCDEFG').islice(2, None).collect(list) == ['C', 'D', 'E', 'F', 'G']
+    assert Iter('ABCDEFG').islice(0, None, 2).collect(list) == ['A', 'C', 'E', 'G']
 
 def test_map():
     ...
