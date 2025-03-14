@@ -1,7 +1,7 @@
 from collections.abc import Callable, Iterable, Iterator
 import itertools
 import operator
-from typing import Any
+from typing import Any, overload
 
 from .func import star_func, doublestar_func, fallible_func
 
@@ -373,6 +373,33 @@ class Iter:
                 )
             )
         )
+    
+    @overload
+    def islice(self, stop: int | None) -> 'Iter':
+        '''Iteration will end after `stop` items'''
+        ...
+
+    @overload
+    def islice(self, start: int | None, stop: int | None) -> 'Iter':
+        '''Slices from `start` (0-indexed) to `stop` (exclusive) or end if `None`'''
+        ...
+    
+    @overload
+    def islice(self, start: int | None, stop: int | None, step: int | None = 1) -> 'Iter':
+        '''Slices from `start` (0-indexed) to `stop` (exclusive) or end if `None`, with `step`'''
+        ...
+
+    def islice(self, *args):
+        match args:
+            case (start, stop, step):
+                new_iter = itertools.islice(self.iterator, start, stop, step)
+            case (start, stop):
+                new_iter = itertools.islice(self.iterator, start, stop)
+            case (step,):
+                new_iter = itertools.islice(self.iterator, step)
+            case _:
+                raise TypeError(f"Invalid arguments {args}")
+        return self._mutating()._update(new_iter)
     
     def map(self, fn: Callable[[Any], Any]):
         '''Maps `fn` onto each element of the iterator.'''
