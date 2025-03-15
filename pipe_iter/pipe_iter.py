@@ -93,12 +93,12 @@ class Iter:
     #*****************#
 
     def __add__(self, other: Iterable):
-        '''Equilvalent to `Iter.chained(this, other).copy_settings(this)`.'''
-        raise NotImplementedError()
+        '''Equivalent to `Iter.chained(this, other).copy_settings(this)`.'''
+        return Iter.chained(self, other).copy_settings(self)
     
     def __iadd__(self, other: Iterable):
         '''Equivalent to `this = this.chain(other)`. Note that the `mutable` setting of `this` is followed.'''
-        raise NotImplementedError()
+        return self.chain(other)
 
     def __iter__(self):
         return self
@@ -410,6 +410,28 @@ class Iter:
                     self.func_options(fn), 
                     self.iterator
                 )
+            )
+        )
+
+    def odditems(self):
+        '''Returns every other item of the iterator, starting with the first.'''
+        selector = Iter([True, False]).cycle()
+        return (self
+            ._mutating()
+            ._update(
+                itertools.compress(
+                    self.iterator, 
+                    selector
+                )
+            )
+        )
+    
+    def pairwise(self):
+        '''Returns pairs of consecutive items from the iterator.'''
+        return (self
+            ._mutating()
+            ._update(
+                itertools.pairwise(self.iterator)
             )
         )
     

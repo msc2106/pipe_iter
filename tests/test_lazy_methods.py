@@ -138,16 +138,21 @@ def test_islice():
     assert Iter('ABCDEFG').islice(0, None, 2).collect(list) == ['A', 'C', 'E', 'G']
 
 def test_map():
-    ...
+    assert Iter(range(5)).map(lambda x: x**2).collect(list) == [0, 1, 4, 9, 16]
+    assert Iter(range(5)).map(str).collect(list) == ['0', '1', '2', '3', '4']
+    assert Iter(range(5)).map(str).map(int).collect(list) == [0, 1, 2, 3, 4]
 
 def test_odditems():
-    ...
+    assert Iter(range(1,7)).odditems().collect(list) == [1, 3, 5]
 
 def test_pairwise():
-    ...
+    assert Iter('ABCDEFG').pairwise().map(lambda t: ''.join(t)).collect(list) == ['AB', 'BC', 'CD', 'DE', 'EF', 'FG']
 
 def test_plus():
-    ...
+    lst1 = ['a', 'b', 'c']
+    lst2 = [1, 2, 3]
+    assert (Iter(lst1) + Iter(lst2)).collect(list) == lst1 + lst2
+    assert (Iter(lst1) + lst2).collect(list) == lst1 + lst2
 
 def test_product():
     ...
