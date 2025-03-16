@@ -1,4 +1,5 @@
 from pipe_iter import Iter
+from pytest import raises
 
 def test_all():
     ...

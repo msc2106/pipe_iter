@@ -435,13 +435,78 @@ class Iter:
             )
         )
     
+    def skip(self, n: int):
+        '''Skips the first `n` items of the iterator. Alias for `Iter.islice(n, None)`.'''
+        return self.islice(n, None)
+    
     def somevalue(self):
         '''Filters out `None` values.'''
         return self.filter(lambda x: x is not None)
     
+    def starmap(self, fn: Callable):
+        '''Maps `fn` onto each element of the iterator, unpacking the arguments. Ignores `star` settings.'''
+        return (self
+            ._mutating()
+            ._update(
+                itertools.starmap(
+                    self.wrap_fallible(fn), 
+                    self.iterator
+                )
+            )
+        )
+    
+    def stretch(self, level=1, flexible=True):
+        '''Reduces `level` levels of nesting. If `flexible` is `True`, items with fewer than `level` levels are included in the result. If `flexible` is `False`, a `TypeError` is raised if the nesting level does not match.'''
+        if not isinstance(level, int) or level < 1:
+            raise TypeError("level must be a positive integer.")
+        def stretch_recur(iterable, current_level):
+            for item in iterable:
+                if current_level >= level:
+                    yield item
+                elif isinstance(item, Iterable):
+                    for sub_item in stretch_recur(item, current_level + 1):
+                        yield sub_item
+                else:
+                    if flexible:
+                        yield item
+                    else:
+                        raise TypeError(f"Item {item} nested {current_level} levels was not iterable.")
+
+        def stretch_generator(iterator):
+            return stretch_recur(iterator, 0)
+        
+        return self._mutating()._update(stretch_generator(self.iterator))
+    
     def switch_map(self, *conditions: tuple[None | Callable[..., bool], Callable]):
         '''Selectively applies functions to elements with a virtual switch statement. The arguments are tuples of a predicate and a function: a given item is transformed by the first function for which the predicate is `True`. If the predicate is `None`, the function is applied to all (remaining) elements.'''
         ...
+
+    def take(self, n: int):
+        '''Returns the first `n` items of the iterator. Alias for `Iter.islice(n)`.'''
+        return self.islice(n)
+
+    #************************#
+    #* Combinatoric methods *#
+    #************************#
+    
+    def permutations(self, r: int = None):
+        '''Yields all permutations of `r` elements from the iterator. This consumes the original iterator. If `r` is not provided, it defaults to the length of the iterator.'''
+        return self._update(
+            itertools.permutations(
+                self.iterator, 
+                r
+            )
+        )
+
+    def product(self, *iterables, repeat: int = 1):
+        '''Yields the cartesian product of the iterator and any number of other iterables. This consumes the iterators (accordingly, `mutating` option is ignored). If `repeat` is provided, each iterator will be repeated that many times.'''
+        return self._update(
+            itertools.product(
+                self.iterator, 
+                *iterables, 
+                repeat=repeat
+            )
+        )
 
     #*********************#
     #* Consuming methods *#

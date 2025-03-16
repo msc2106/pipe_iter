@@ -154,28 +154,35 @@ def test_plus():
     assert (Iter(lst1) + Iter(lst2)).collect(list) == lst1 + lst2
     assert (Iter(lst1) + lst2).collect(list) == lst1 + lst2
 
-def test_product():
-    ...
-
-def test_permutations():
-    ...
-
 def test_skip():
-    ...
+    assert Iter('ABCDEFG').skip(2).collect(list) == ['C', 'D', 'E', 'F', 'G']
 
 def test_somevalue():
     x = [0, 1, None, 2, "", 3, None]
     assert Iter(x).somevalue().collect(list) == [0, 1, 2, "", 3]
 
 def test_starmap():
-    ...
+    itr = Iter.zipped(range(3), 'ABC').starmap(lambda x, y: f"{y}: {x}")
+    assert itr.collect(list) == ['A: 0', 'B: 1', 'C: 2']
 
 def test_starmap_ignore_star_settings():
-    ...
+    itr = Iter.zipped(range(3), 'ABC').star().starmap(lambda x, y: f"{y}: {x}")
+    assert itr.collect(list) == ['A: 0', 'B: 1', 'C: 2']
 
 def test_stretch():
-    # Selective and/or recursive flatten
-    ...
+    multilevel = [
+        [0, 1],
+        [[4, 5], [6, 7]],
+        [8, 9],
+    ]
+
+    assert Iter(multilevel).stretch().collect(list) == [0, 1, [4, 5], [6, 7], 8, 9]
+    assert Iter(multilevel).stretch(2).collect(list) == [0, 1, 4, 5, 6, 7, 8, 9]
+    assert Iter(multilevel).stretch(3).collect(list) == [0, 1, 4, 5, 6, 7, 8, 9]
+    with raises(TypeError):
+        Iter(multilevel).stretch(2, False).collect(list)
+    with raises(TypeError):
+        Iter(multilevel).stretch(0).collect(list)
 
 def test_switch_map():
     ...
@@ -184,6 +191,9 @@ def test_takewhile():
     ...
 
 def test_tee():
+    ...
+
+def test_zip():
     ...
 
 def test_zip_longest():
