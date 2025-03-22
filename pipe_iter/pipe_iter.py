@@ -477,13 +477,53 @@ class Iter:
         
         return self._mutating()._update(stretch_generator(self.iterator))
     
-    def switch_map(self, *conditions: tuple[None | Callable[..., bool], Callable]):
-        '''Selectively applies functions to elements with a virtual switch statement. The arguments are tuples of a predicate and a function: a given item is transformed by the first function for which the predicate is `True`. If the predicate is `None`, the function is applied to all (remaining) elements.'''
-        ...
+    # def switch_map(self, *conditions: tuple[None | Callable[..., bool], Callable]):
+    #     '''Selectively applies functions to elements with a virtual switch statement. The arguments are tuples of a predicate and a function: a given item is transformed by the first function for which the predicate is `True`. If the predicate is `None`, the function is applied to all (remaining) elements.'''
+    #     ...
 
     def take(self, n: int):
         '''Returns the first `n` items of the iterator. Alias for `Iter.islice(n)`.'''
         return self.islice(n)
+    
+    def takewhile(self, predicate: Callable[[Any], bool]):
+        '''Returns items from the iterator while `predicate` is `True`. If `fallible`, then the predicate raising an exception will trigger to stop returning values.'''
+        return (self
+            ._mutating()
+            ._update(
+                itertools.takewhile(
+                    self.func_options(predicate), 
+                    self.iterator
+                )
+            )
+        )
+    
+    def tee(self, n: int = 2) -> tuple['Iter', ...]:
+        '''Creates `n` independent clones.'''
+        iterators = itertools.tee(self.iterator, n)
+        return tuple(Iter(iterator).copy_settings(self) for iterator in iterators)
+    
+    def zip(self, *others: Iterable):
+        return (self
+            ._mutating()
+            ._update(
+                zip(
+                    self.iterator,
+                    *others
+                )
+            )
+        )
+
+    def zip_longest(self, *others: Iterable, fillvalue=None):
+        return (self
+            ._mutating()
+            ._update(
+                itertools.zip_longest(
+                    self.iterator,
+                    *others,
+                    fillvalue=fillvalue
+                )
+            )
+        )
 
     #************************#
     #* Combinatoric methods *#

@@ -184,17 +184,22 @@ def test_stretch():
     with raises(TypeError):
         Iter(multilevel).stretch(0).collect(list)
 
-def test_switch_map():
-    ...
+# def test_switch_map():
+#     ...
 
 def test_takewhile():
-    ...
+    assert Iter([1,4,6,3,8]).takewhile(lambda x: x < 5).collect(list) == [1, 4]
+    with raises(TypeError):
+        assert Iter([1,4,'a',3,8]).takewhile(lambda x: x < 5).collect(list) == [1, 4]
+    assert Iter([1,4,'a',3,8]).fallible().takewhile(lambda x: x < 5).collect(list) == [1, 4]
 
 def test_tee():
-    ...
+    original = Iter(range(5))
+    iters = original.tee(3)
+    assert all(itr.collect(list) == [0, 1, 2, 3, 4] for itr in iters)
 
 def test_zip():
-    ...
+    assert Iter('ABCD').zip('xy',).collect(list) == [('A','x',), ('B','y',)]
 
 def test_zip_longest():
-    ...
+    assert Iter('ABCD').zip_longest('xy', fillvalue='-').collect(list) == [('A','x',), ('B','y',), ('C', '-'), ('D','-',)]
