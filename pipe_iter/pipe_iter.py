@@ -1,4 +1,5 @@
 from collections.abc import Callable, Iterable, Iterator
+import functools
 import itertools
 import operator
 from typing import Any, overload
@@ -552,6 +553,18 @@ class Iter:
     #* Consuming methods *#
     #*********************#
 
+    def all(self):
+        '''Returns `True` if all items in the iterator evaluate to `True`.'''
+        return all(self)
+    
+    def all_not(self):
+        '''Returns `True` if all items in the iterator evaluate to `False`.'''
+        return not self.any()
+    
+    def any(self):
+        '''Returns `True` if any items in the iterator evaluate to `True`.'''
+        return any(self)
+
     def collect(self, fn: Callable[[Iterable], Any]):
         '''Calls `fn`, function that accepts and consumes an iterable, on itself. For functions that transform an iterable into an `Iterator`, use `apply`.'''
         return fn(self)
@@ -559,3 +572,25 @@ class Iter:
     def collect_args(self, fn: Callable[..., Any]):
         '''Calls `fn`, a function that accepts positional arguments, by unpacking itself.'''
         return fn(*self)
+    
+    def count_if(self, predicate: Callable[[Any], bool]):
+        '''Counts the number of items in the iterator for which `predicate` is `True`.'''
+        return self.filter(predicate).reduce(lambda x, _: x + 1, initial=0)
+    
+    def fold(self, fn: Callable[[Any, Any], Any], initial):
+        '''Reduces the iterator to a single value by applying `fn` to each item and the previous result, beginning with `initial`.'''
+        return functools.reduce(
+            fn,
+            self.iterator, 
+            initial
+        )
+        
+    def reduce(self, fn: Callable[[Any, Any], Any], initial: Any = ...):
+        '''Reduces the iterator to a single value by applying `fn` to each item and the previous result. If `initial` is provided, it is used as the initial value.'''
+        if initial is ...:
+            return functools.reduce(
+                fn,
+                self.iterator
+            )
+        else:
+            return self.fold(fn, initial)

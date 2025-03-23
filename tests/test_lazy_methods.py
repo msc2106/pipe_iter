@@ -202,4 +202,9 @@ def test_zip():
     assert Iter('ABCD').zip('xy',).collect(list) == [('A','x',), ('B','y',)]
 
 def test_zip_longest():
-    assert Iter('ABCD').zip_longest('xy', fillvalue='-').collect(list) == [('A','x',), ('B','y',), ('C', '-'), ('D','-',)]
+    assert (
+        Iter('ABCD')
+            .zip_longest('xy', fillvalue='-')
+            .collect(list) 
+        == [('A','x',), ('B','y',), ('C', '-'), ('D','-',)]
+    )
