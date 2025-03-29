@@ -31,7 +31,12 @@ def test_eq():
     ...
 
 def test_find():
-    ...
+    itr = Iter(range(10))
+    assert itr.find(lambda x: x % 2 == 1) == 1
+    assert next(itr) == 2
+    assert itr.find(lambda x: x > 10) is None
+    with raises(StopIteration):
+        next(itr)
 
 def test_fold():
     assert Iter(range(10)).fold(lambda acc, x: acc + x, 0) == 45

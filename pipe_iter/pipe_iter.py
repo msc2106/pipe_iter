@@ -577,6 +577,10 @@ class Iter:
         '''Counts the number of items in the iterator for which `predicate` is `True`.'''
         return self.filter(predicate).reduce(lambda x, _: x + 1, initial=0)
     
+    def find(self, predicate: Callable[[Any], bool]):
+        '''Consumes the iterator up to the first item for which `predicate` is `True`, and returns the item. If the iterator is exhausted before finding any such item, returns `None`.'''
+        return self.mirror().filter(predicate).next(default=None)
+    
     def fold(self, fn: Callable[[Any, Any], Any], initial):
         '''Reduces the iterator to a single value by applying `fn` to each item and the previous result, beginning with `initial`.'''
         return functools.reduce(
@@ -584,6 +588,13 @@ class Iter:
             self.iterator, 
             initial
         )
+    
+    def next(self, default: Any = ...):
+        '''Returns the next item in the iterator. If `default` is provided, it is returned if the iterator is exhausted. Otherwise, `StopIteration` is raised.'''
+        if default is ...:
+            return next(self)
+        else:
+            return next(self, default)
         
     def reduce(self, fn: Callable[[Any, Any], Any], initial: Any = ...):
         '''Reduces the iterator to a single value by applying `fn` to each item and the previous result. If `initial` is provided, it is used as the initial value.'''
