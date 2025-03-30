@@ -45,7 +45,9 @@ def test_fold():
         assert Iter(range(10)).fold(lambda acc, x: acc + x) == 45
 
 def test_for_each():
-    ...
+    total = []
+    Iter(range(5)).for_each(lambda x: total.append(x))
+    assert total == list(range(5))
 
 def test_neq():
     ...

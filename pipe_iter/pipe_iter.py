@@ -589,6 +589,11 @@ class Iter:
             initial
         )
     
+    def for_each(self, fn: Callable[[Any], Any]) -> None:
+        '''Eargerly calls `fn` on each item of iterator.'''
+        for item in self:
+            self.func_options(fn)(item)
+
     def next(self, default: Any = ...):
         '''Returns the next item in the iterator. If `default` is provided, it is returned if the iterator is exhausted. Otherwise, `StopIteration` is raised.'''
         if default is ...:
