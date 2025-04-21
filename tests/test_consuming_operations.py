@@ -59,7 +59,9 @@ def test_next_method():
     ...
 
 def test_nth():
-    ...
+    assert Iter(range(10)).nth(2) == 1
+    assert Iter(range(10)).nth(10) == 9
+    assert Iter(range(10)).nth(11) is None
 
 def test_partition():
     ...

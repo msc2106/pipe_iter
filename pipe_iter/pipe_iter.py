@@ -601,6 +601,15 @@ class Iter:
         else:
             return next(self, default)
         
+    def nth(self, n: int):
+        '''Returns the `n`th item in the iterator. If the iterator is exhausted before reaching `n`, returns `None`.'''
+        for _ in range(n):
+            try:
+                item = next(self)
+            except StopIteration:
+                return None
+        return item
+        
     def reduce(self, fn: Callable[[Any, Any], Any], initial: Any = ...):
         '''Reduces the iterator to a single value by applying `fn` to each item and the previous result. If `initial` is provided, it is used as the initial value.'''
         if initial is ...:
